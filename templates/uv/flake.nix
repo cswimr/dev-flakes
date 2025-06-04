@@ -107,6 +107,7 @@
 
                   source .venv/bin/activate
                   export PATH="${pkgs.ruff}/bin:${pkgs.basedpyright}/bin:$PATH"
+                  python -m ensurepip > /dev/null
                 '';
                 deps = [ "ensure-git-repository" ];
               };
