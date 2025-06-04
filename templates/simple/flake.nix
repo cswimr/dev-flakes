@@ -26,6 +26,14 @@
           devshell = {
             name = "SimpleTemplate";
             startup = {
+              ensure-git-repository.text = ''
+                if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+                  echo "❌ Git repository not found! Initializing..."
+                  git init
+                  git add flake.nix flake.lock # Add these files so Nix can detect the flake and its lockfile, now that we're in a git repository
+                  echo "✅ Git repo initialized."
+                fi
+              '';
               ensure-data-dir-exists.text = ''mkdir -p "$PRJ_DATA_DIR"'';
             };
           };
@@ -44,6 +52,7 @@
 
           packages = with pkgs; [
             stdenv.cc.cc
+            git
           ];
 
           motd = ''

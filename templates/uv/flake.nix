@@ -27,78 +27,89 @@
           devshell = {
             name = "uvTemplate";
             startup = {
-              bootstrap-project.text = ''
-                set -euo pipefail
-
-                echo "🔧 Bootstrapping Python environment..."
-
-                has_pyproject=false
-                has_requirements=false
-                venv_exists=false
-
-                if [[ -d ".venv" ]]; then
-                  venv_exists=true
+              ensure-git-repository.text = ''
+                if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+                  echo "❌ Git repository not found! Initializing..."
+                  git init
+                  git add flake.nix flake.lock # Add these files so Nix can detect the flake and its lockfile, now that we're in a git repository
+                  echo "✅ Git repo initialized."
                 fi
-
-                if [[ -f "pyproject.toml" ]]; then
-                  echo "📦 Found pyproject.toml"
-                  has_pyproject=true
-                else
-                  echo "🚫 pyproject.toml not found."
-                fi
-
-                requirements_files=(
-                  "requirements.txt"
-                  "requirements-dev.txt"
-                  "requirements.dev.txt"
-                  "dev-requirements.txt"
-                  "dev.txt"
-                  "test-requirements.txt"
-                  "requirements_test.txt"
-                )
-
-                for file in "''${requirements_files[@]}"; do
-                  if [[ -f "$file" ]]; then
-                    echo "✅ Found: $file"
-                    if [[ "$venv_exists" = false ]]; then
-                      uv venv
-                      venv_exists=true
-                    fi
-                    uv pip install -r "$file"
-                    has_requirements=true
-                  fi
-                done
-
-                mapfile -t wildcard_matches < <(find . -maxdepth 1 -type f -iname "requirements*.txt")
-
-                for match in "''${wildcard_matches[@]}"; do
-                  if [[ ! " ''${requirements_files[*]} " =~ " ''${match##./} " ]]; then
-                    echo "✅ Found (wildcard): $match"
-                    if [[ "$venv_exists" = false ]]; then
-                      uv venv
-                      venv_exists=true
-                    fi
-                    uv pip install -r "$match"
-                    has_requirements=true
-                  fi
-                done
-
-                if [[ "$has_pyproject" = false && "$has_requirements" = false ]]; then
-                  echo "🧪 No pyproject.toml or requirements files found. Creating bare uv project..."
-                  uv init --bare --name=change-me
-                fi
-
-                if [[ ! -f "uv.lock" && "$has_requirements" = false ]]; then
-                  echo "🔒 uv.lock not found. Generating lockfile..."
-                  uv sync --all-groups --all-extras
-                elif [[ "$has_requirements" = false ]]; then
-                  echo "🔒 uv.lock found. Syncing with lockfile..."
-                  uv sync --all-groups --all-extras --locked
-                fi
-
-                source .venv/bin/activate
-                export PATH="${pkgs.ruff}/bin:${pkgs.basedpyright}/bin:$PATH"
               '';
+              bootstrap-project = {
+                text = ''
+                  set -euo pipefail
+
+                  echo "🔧 Bootstrapping Python environment..."
+
+                  has_pyproject=false
+                  has_requirements=false
+                  venv_exists=false
+
+                  if [[ -d ".venv" ]]; then
+                    venv_exists=true
+                  fi
+
+                  if [[ -f "pyproject.toml" ]]; then
+                    echo "📦 Found pyproject.toml"
+                    has_pyproject=true
+                  else
+                    echo "🚫 pyproject.toml not found."
+                  fi
+
+                  requirements_files=(
+                    "requirements.txt"
+                    "requirements-dev.txt"
+                    "requirements.dev.txt"
+                    "dev-requirements.txt"
+                    "dev.txt"
+                    "test-requirements.txt"
+                    "requirements_test.txt"
+                  )
+
+                  for file in "''${requirements_files[@]}"; do
+                    if [[ -f "$file" ]]; then
+                      echo "✅ Found: $file"
+                      if [[ "$venv_exists" = false ]]; then
+                        uv venv
+                        venv_exists=true
+                      fi
+                      uv pip install -r "$file"
+                      has_requirements=true
+                    fi
+                  done
+
+                  mapfile -t wildcard_matches < <(find . -maxdepth 1 -type f -iname "requirements*.txt")
+
+                  for match in "''${wildcard_matches[@]}"; do
+                    if [[ ! " ''${requirements_files[*]} " =~ " ''${match##./} " ]]; then
+                      echo "✅ Found (wildcard): $match"
+                      if [[ "$venv_exists" = false ]]; then
+                        uv venv
+                        venv_exists=true
+                      fi
+                      uv pip install -r "$match"
+                      has_requirements=true
+                    fi
+                  done
+
+                  if [[ "$has_pyproject" = false && "$has_requirements" = false ]]; then
+                    echo "🧪 No pyproject.toml or requirements files found. Creating bare uv project..."
+                    uv init --bare --name=change-me
+                  fi
+
+                  if [[ ! -f "uv.lock" && "$has_requirements" = false ]]; then
+                    echo "🔒 uv.lock not found. Generating lockfile..."
+                    uv sync --all-groups --all-extras
+                  elif [[ "$has_requirements" = false ]]; then
+                    echo "🔒 uv.lock found. Syncing with lockfile..."
+                    uv sync --all-groups --all-extras --locked
+                  fi
+
+                  source .venv/bin/activate
+                  export PATH="${pkgs.ruff}/bin:${pkgs.basedpyright}/bin:$PATH"
+                '';
+                deps = [ "ensure-git-repository" ];
+              };
               ensure-data-dir-exists.text = ''mkdir -p "$PRJ_DATA_DIR"'';
             };
           };
@@ -118,6 +129,7 @@
           packages = with pkgs; [
             stdenv.cc.cc
             inputs.nixpkgs-python.packages.${system}."3.9"
+            git
             # Material for MkDocs dependencies
             cairo
             pngquant
