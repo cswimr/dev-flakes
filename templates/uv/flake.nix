@@ -56,41 +56,43 @@
                     echo "🚫 pyproject.toml not found."
                   fi
 
-                  requirements_files=(
-                    "requirements.txt"
-                    "requirements-dev.txt"
-                    "requirements.dev.txt"
-                    "dev-requirements.txt"
-                    "dev.txt"
-                    "test-requirements.txt"
-                    "requirements_test.txt"
-                  )
+                  if [[ "$has_pyproject" = "false" ]]; then
+                    requirements_files=(
+                      "requirements.txt"
+                      "requirements-dev.txt"
+                      "requirements.dev.txt"
+                      "dev-requirements.txt"
+                      "dev.txt"
+                      "test-requirements.txt"
+                      "requirements_test.txt"
+                    )
 
-                  for file in "''${requirements_files[@]}"; do
-                    if [[ -f "$file" ]]; then
-                      echo "✅ Found: $file"
-                      if [[ "$venv_exists" = false ]]; then
-                        uv venv
-                        venv_exists=true
+                    for file in "''${requirements_files[@]}"; do
+                      if [[ -f "$file" ]]; then
+                        echo "✅ Found: $file"
+                        if [[ "$venv_exists" = false ]]; then
+                          uv venv
+                          venv_exists=true
+                        fi
+                        uv pip install -r "$file"
+                        has_requirements=true
                       fi
-                      uv pip install -r "$file"
-                      has_requirements=true
-                    fi
-                  done
+                    done
 
-                  mapfile -t wildcard_matches < <(find . -maxdepth 1 -type f -iname "requirements*.txt")
+                    mapfile -t wildcard_matches < <(find . -maxdepth 1 -type f -iname "requirements*.txt")
 
-                  for match in "''${wildcard_matches[@]}"; do
-                    if [[ ! " ''${requirements_files[*]} " =~ " ''${match##./} " ]]; then
-                      echo "✅ Found (wildcard): $match"
-                      if [[ "$venv_exists" = false ]]; then
-                        uv venv
-                        venv_exists=true
+                    for match in "''${wildcard_matches[@]}"; do
+                      if [[ ! " ''${requirements_files[*]} " =~ " ''${match##./} " ]]; then
+                        echo "✅ Found (wildcard): $match"
+                        if [[ "$venv_exists" = false ]]; then
+                          uv venv
+                          venv_exists=true
+                        fi
+                        uv pip install -r "$match"
+                        has_requirements=true
                       fi
-                      uv pip install -r "$match"
-                      has_requirements=true
-                    fi
-                  done
+                    done
+                  fi
 
                   if [[ "$has_pyproject" = false && "$has_requirements" = false ]]; then
                     echo "🧪 No pyproject.toml or requirements files found. Creating bare uv project..."
