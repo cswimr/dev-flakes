@@ -106,7 +106,7 @@
                   fi
 
                   source .venv/bin/activate
-                  export PATH="${pkgs.ruff}/bin:${pkgs.basedpyright}/bin:$PATH"
+                  export PATH="${pkgs.uv}/bin:${pkgs.ruff}/bin:${pkgs.basedpyright}/bin:$PATH"
                 '';
                 deps = [ "ensure-git-repository" ];
               };
