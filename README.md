@@ -19,6 +19,12 @@ nix flake init -t "git+https://c.csw.im/cswimr/dev-flakes#uv"
 ### Avoiding Python Compilation
 
 This template uses [`nixpkgs-python`](https://github.com/cachix/nixpkgs-python) to retrieve Python builds. You can use [Cachix](https://www.cachix.org/) to add their binary cache to your user configuration. This will avoid lengthy Python compilation times. Their [README](https://github.com/cachix/nixpkgs-python?tab=readme-ov-file#cachix-optional) has more information on this topic.  
+You can use the following command to add the binary cache to your user's `nix.conf` file:
+
+```bash
+nix-shell -p cachix --run cachix add nixpkgs-python
+```
+
 Here's an example NixOS configuration that configures this binary cache:
 
 ```nix
