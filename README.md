@@ -2,7 +2,7 @@
 
 ## Simple
 
-This template has all the batteries included to get you started with [`numtide`](https://github.com/numtide)'s [`devshell`](https://github.com/numtide/devshell). Use the following command to add it to your project:
+This template has all the batteries included to get you started with [numtide](https://github.com/numtide)'s [`devshell`](https://github.com/numtide/devshell). Use the following command to add it to your project:
 
 ```bash
 nix flake init -t "git+https://c.csw.im/cswimr/dev-flakes#simple"
