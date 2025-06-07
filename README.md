@@ -25,7 +25,7 @@ You can use the following command to add the binary cache to your user's `nix.co
 nix-shell -p cachix --run "cachix use nixpkgs-python"
 ```
 
-Here's an example NixOS configuration that configures this binary cache:
+Here's an example NixOS configuration that configures this binary cache system-wide:
 
 ```nix
 {
