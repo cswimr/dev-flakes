@@ -1,3 +1,6 @@
+let
+  name = "uvTemplate";
+in
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -24,8 +27,57 @@
       in
       {
         devShells.default = pkgs.devshell.mkShell {
+          commands = with pkgs; [
+            { package = uv; }
+            { package = ruff; } # the ruff pip package installs a dynamically linked binary that cannot run on NixOS
+            { package = basedpyright; } # same as ruff
+            { package = typos; }
+            {
+              name = "mkdocs";
+              command = ''mkdocs "$@"'';
+              help = "Project documentation with Markdown / static website generator";
+            }
+          ];
+
+          packages = with pkgs; [
+            stdenv.cc.cc
+            inputs.nixpkgs-python.packages.${system}."3.9" # 2.7, 3.3.1 - latest
+            git
+            # Material for MkDocs dependencies
+            cairo
+            pngquant
+          ];
+
+          env = [
+            {
+              name = "CPPFLAGS";
+              eval = "-I$DEVSHELL_DIR/include";
+            }
+            {
+              name = "LDFLAGS";
+              eval = "-L$DEVSHELL_DIR/lib";
+            }
+            {
+              name = "LD_LIBRARY_PATH";
+              eval = "$DEVSHELL_DIR/lib:$LD_LIBRARY_PATH";
+            }
+            {
+              name = "UV_PYTHON_PREFERENCE";
+              value = "only-system";
+            }
+            {
+              name = "UV_PYTHON_DOWNLOADS";
+              value = "never";
+            }
+          ];
+
+          motd = ''
+            {33}🔨 Welcome to the {208}${name}{33} Devshell!{reset}
+            $(type -p menu &>/dev/null && menu)
+          '';
+
           devshell = {
-            name = "uvTemplate";
+            name = name;
             startup = {
               ensure-git-repository.text = ''
                 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -115,55 +167,6 @@
               ensure-data-dir-exists.text = ''mkdir -p "$PRJ_DATA_DIR"'';
             };
           };
-
-          commands = with pkgs; [
-            { package = uv; }
-            { package = ruff; } # the ruff pip package installs a dynamically linked binary that cannot run on NixOS
-            { package = basedpyright; } # same as ruff
-            { package = typos; }
-            {
-              name = "mkdocs";
-              command = ''mkdocs "$@"'';
-              help = "Project documentation with Markdown / static website generator";
-            }
-          ];
-
-          packages = with pkgs; [
-            stdenv.cc.cc
-            inputs.nixpkgs-python.packages.${system}."3.9"
-            git
-            # Material for MkDocs dependencies
-            cairo
-            pngquant
-          ];
-
-          env = [
-            {
-              name = "CPPFLAGS";
-              eval = "-I$DEVSHELL_DIR/include";
-            }
-            {
-              name = "LDFLAGS";
-              eval = "-L$DEVSHELL_DIR/lib";
-            }
-            {
-              name = "LD_LIBRARY_PATH";
-              eval = "$DEVSHELL_DIR/lib:$LD_LIBRARY_PATH";
-            }
-            {
-              name = "UV_PYTHON_PREFERENCE";
-              value = "only-system";
-            }
-            {
-              name = "UV_PYTHON_DOWNLOADS";
-              value = "never";
-            }
-          ];
-
-          motd = ''
-            {33}🔨 Welcome to the {208}uvTemplate{33} Devshell!{reset}
-            $(type -p menu &>/dev/null && menu)
-          '';
         };
       }
     );
