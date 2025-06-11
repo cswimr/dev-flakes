@@ -1,6 +1,3 @@
-let
-  name = "SimpleTemplate";
-in
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -23,6 +20,7 @@ in
             devshell.overlays.default
           ];
         };
+        name = "SimpleTemplate";
       in
       {
         devShells.default = pkgs.devshell.mkShell {

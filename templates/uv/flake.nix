@@ -1,6 +1,3 @@
-let
-  name = "uvTemplate";
-in
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -24,6 +21,8 @@ in
             devshell.overlays.default
           ];
         };
+        name = "uvTemplate";
+        pythonVersion = "3.9"; # 2.7, 3.3.1 - latest
       in
       {
         devShells.default = pkgs.devshell.mkShell {
@@ -41,7 +40,7 @@ in
 
           packages = with pkgs; [
             stdenv.cc.cc
-            inputs.nixpkgs-python.packages.${system}."3.9" # 2.7, 3.3.1 - latest
+            inputs.nixpkgs-python.packages.${system}.${pythonVersion}
             git
             # Material for MkDocs dependencies
             cairo
