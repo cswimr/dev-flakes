@@ -1,5 +1,10 @@
 # Nix Flake Templates
 
+## Archival Notice
+
+> [!IMPORTANT]
+> As of 6/11/2025, this repository is archived. Please use the templates located at [cswimr/flake](https://c.csw.im/cswimr/flake) instead.
+
 ## Simple
 
 This template has all the batteries included to get you started with [numtide](https://github.com/numtide)'s [`devshell`](https://github.com/numtide/devshell). Use the following command to add it to your project:
